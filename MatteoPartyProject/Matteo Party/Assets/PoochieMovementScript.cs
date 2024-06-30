@@ -14,6 +14,7 @@ public class PoochieMovementScript : MonoBehaviour
     //FOR THE BOOSTING
     private Vector3 boostVector;
     private Vector3 boostDirection;
+    private Vector3 boostDirectionRegistered;
     [SerializeField] private float initialBoostPower;
     private float boostPower;
     private float boostAccumulated;
@@ -35,10 +36,12 @@ public class PoochieMovementScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        MovementController();
-
+        //MovementController();
 
         AccumulateBoost();
+
+        SelectDirection();
+
         RealeaseBoost();
 
         //IN THE END APPLY THE COMPUTED MOVEMENT VECTOR;
@@ -47,11 +50,11 @@ public class PoochieMovementScript : MonoBehaviour
 
     void Move()
     {
+        newMovementVector = new Vector3(0.0f, rb.velocity.y, 0.0f);
+
         rb.velocity = newMovementVector + boostVector;
 
-
         lastMovementVector = newMovementVector;
-        newMovementVector = Vector3.zero;
     }
 
     void MovementController()
@@ -66,6 +69,13 @@ public class PoochieMovementScript : MonoBehaviour
         float moveZ = Input.GetAxis("Vertical") * movementSpeed;
 
         newMovementVector += new Vector3(moveX, rb.velocity.y, moveZ);
+    }
+
+    void SelectDirection() {
+        float inputX = Input.GetAxis("Horizontal");
+        float inputY = Input.GetAxis("Vertical");
+
+        boostDirection = new Vector3(inputX, 0.0f, inputY);
     }
 
     void AccumulateBoost()
@@ -85,21 +95,16 @@ public class PoochieMovementScript : MonoBehaviour
     {
         if (Input.GetKeyUp(KeyCode.Space))
         {
-            Vector3 direction = new Vector3(newMovementVector.x, 0, newMovementVector.z);
+            boostDirectionRegistered = boostDirection;
 
-            if(direction != Vector3.zero)
-            {
-                boostDirection = direction.normalized;
-            }
-
-            boostVector = boostDirection * boostPower;
+            boostVector = boostDirectionRegistered * boostPower;
 
             boostCounter = boostDuration;
         }
 
         if(boostCounter > 0)
         {
-            boostVector = boostDirection * boostPower * boostCounter / boostDuration;
+            boostVector = boostDirectionRegistered * boostPower * boostCounter / boostDuration;
             boostCounter -= Time.deltaTime;
         }
 
