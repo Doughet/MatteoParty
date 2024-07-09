@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class DashMGManager : MonoBehaviour
 {
@@ -19,19 +20,32 @@ public class DashMGManager : MonoBehaviour
 
     private float score;
 
+    //UI Part
+    [SerializeField] private Slider timeSlider;
+    [SerializeField] private float maxValueTimeSlider;
+    [SerializeField] private Color startColorTime;
+    [SerializeField] private Color endColorTime;
+    private float currentValueTimeSlider;
+
     private void Start()
     {
         score = 0.0f;
         currentCounter = maxCounter;
 
-        refillCounter = 2.0f;
+        refillCounter = 5.0f;
         spawnCounter = refillCounter;
 
         targets = new List<TargetDashScript>();
+
+        currentValueTimeSlider = maxValueTimeSlider;
+        timeSlider.maxValue = maxValueTimeSlider;
+        timeSlider.value = currentValueTimeSlider;
     }
 
     private void Update()
     {
+        TimeManagement();
+
         currentCounter -= Time.deltaTime;
         spawnCounter -= Time.deltaTime;
 
@@ -51,6 +65,15 @@ public class DashMGManager : MonoBehaviour
     private void ManageRefill()
     {
 
+    }
+
+    private void TimeManagement()
+    {
+        currentValueTimeSlider -= Time.deltaTime;
+        timeSlider.value = currentValueTimeSlider;
+
+        var color = Color.Lerp(endColorTime, startColorTime, currentValueTimeSlider / maxValueTimeSlider);
+        timeSlider.fillRect.GetComponent<Image>().color = color;
     }
 
     private void SpawnTarget()

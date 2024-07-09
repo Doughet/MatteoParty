@@ -7,9 +7,7 @@ public class PoochieMovementScript : MonoBehaviour
     [SerializeField] float movementSpeed = 1.0f;
     [SerializeField] bool invesedHorizontalControls = false;
 
-
     private Rigidbody rb;
-
 
     //FOR THE BOOSTING
     private Vector3 boostVector;
@@ -18,9 +16,16 @@ public class PoochieMovementScript : MonoBehaviour
     [SerializeField] private float initialBoostPower;
     private float boostPower;
     private float boostAccumulated;
+    private float boostAccumulatedReal;
     [SerializeField] private float boostAccumulationSpeed;
     [SerializeField] private float boostDuration;
     private float boostCounter;
+
+    [SerializeField] private ParticleSystem particleFocus;
+    [SerializeField] private Color color0Focus;
+    [SerializeField] private Color color100Focus;
+    [SerializeField] private Color color300Focus;
+    [SerializeField] private Color color500Focus;
 
     private Vector3 lastMovementVector;
     private Vector3 newMovementVector;
@@ -41,6 +46,8 @@ public class PoochieMovementScript : MonoBehaviour
         AccumulateBoost();
 
         SelectDirection();
+
+        SelectPower();
 
         RealeaseBoost();
 
@@ -78,16 +85,44 @@ public class PoochieMovementScript : MonoBehaviour
         boostDirection = new Vector3(inputX, 0.0f, inputY);
     }
 
+    void SelectPower()
+    {
+        if (boostAccumulated > 500)
+        {
+            particleFocus.startColor = color500Focus;
+            boostAccumulatedReal = 500;
+        }
+        else if (boostAccumulated > 300)
+        {
+            particleFocus.startColor = color300Focus;
+            boostAccumulatedReal = 300;
+        }
+        else if (boostAccumulated > 100)
+        {
+            particleFocus.startColor = color100Focus;
+            boostAccumulatedReal = 100;
+        }
+        else if (boostAccumulated > 0)
+        {
+            particleFocus.startColor = color0Focus;
+        }
+    }
+
     void AccumulateBoost()
     {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            particleFocus.Play();
+        }
         if (Input.GetKey(KeyCode.Space))
         {
             boostAccumulated += Time.deltaTime * boostAccumulationSpeed;
         }
         if (Input.GetKeyUp(KeyCode.Space))
         {
-            boostPower = boostAccumulated;
+            boostPower = boostAccumulatedReal;
             boostAccumulated = initialBoostPower;
+            particleFocus.Stop();
         }
     }
 
