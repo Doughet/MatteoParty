@@ -87,15 +87,15 @@ public class PoochieMovementScript : MonoBehaviour
 
     void SelectPower()
     {
-        if (boostAccumulated > 500)
+        if (boostAccumulated > 600)
         {
             particleFocus.startColor = color500Focus;
-            boostAccumulatedReal = 500;
+            boostAccumulatedReal = 600;
         }
-        else if (boostAccumulated > 300)
+        else if (boostAccumulated > 350)
         {
             particleFocus.startColor = color300Focus;
-            boostAccumulatedReal = 300;
+            boostAccumulatedReal = 350;
         }
         else if (boostAccumulated > 100)
         {
@@ -121,6 +121,7 @@ public class PoochieMovementScript : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.Space))
         {
             boostPower = boostAccumulatedReal;
+            boostAccumulatedReal = 0;
             boostAccumulated = initialBoostPower;
             particleFocus.Stop();
         }
@@ -149,5 +150,15 @@ public class PoochieMovementScript : MonoBehaviour
             boostVector = Vector3.zero;
         }
 
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        var targetDash = other.GetComponent<TargetDashScript>();
+
+        if (targetDash)
+        {
+            targetDash.LaunchEvent(boostPower);
+        }
     }
 }

@@ -2,13 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class DashMGManager : MonoBehaviour
 {
     [SerializeField] private Vector3 centerPosition;
     [SerializeField] private float radius;
+    [SerializeField] private float minDistanceFromPlayer;
 
     [SerializeField] private TargetDashScript targetPrefab;
+
+    [SerializeField] private PoochieMovementScript playerScript;
 
     private float maxCounter;
     private float currentCounter;
@@ -27,6 +31,8 @@ public class DashMGManager : MonoBehaviour
     [SerializeField] private Color endColorTime;
     private float currentValueTimeSlider;
 
+    [SerializeField] private TMP_Text scoreText;
+
     private void Start()
     {
         score = 0.0f;
@@ -37,9 +43,13 @@ public class DashMGManager : MonoBehaviour
 
         targets = new List<TargetDashScript>();
 
+        playerScript = FindAnyObjectByType<PoochieMovementScript>();
+
         currentValueTimeSlider = maxValueTimeSlider;
         timeSlider.maxValue = maxValueTimeSlider;
         timeSlider.value = currentValueTimeSlider;
+
+        scoreText.text = "Score : 0";
     }
 
     private void Update()
@@ -78,23 +88,40 @@ public class DashMGManager : MonoBehaviour
 
     private void SpawnTarget()
     {
-        float radiusFraction = Random.Range(0.0f, 1.0f);
-        float angleFraction = Random.Range(0.0f, 1.0f);
+        Vector3 position = new Vector3(0, 3.5f, 0);
 
-        float radiusSelected = radius * radiusFraction;
-        float angleSelected = angleFraction * 2 * Mathf.PI;
+        do
+        {
+            float radiusFraction = Random.Range(0.0f, 1.0f);
+            float angleFraction = Random.Range(0.0f, 1.0f);
 
-        float xValue = centerPosition.x + Mathf.Cos(angleSelected) * radiusSelected;
-        float zValue = centerPosition.z +  Mathf.Sin(angleSelected) * radiusSelected;
+            float radiusSelected = radius * radiusFraction;
+            float angleSelected = angleFraction * 2 * Mathf.PI;
 
-        Vector3 position = new Vector3(xValue, 3.5f, zValue);
+            float xValue = centerPosition.x + Mathf.Cos(angleSelected) * radiusSelected;
+            float zValue = centerPosition.z + Mathf.Sin(angleSelected) * radiusSelected;
+
+            position = new Vector3(xValue, 3.5f, zValue);
+
+        }
+        while (Vector3.Distance(position, playerScript.gameObject.transform.position) < minDistanceFromPlayer);
 
         TargetDashScript target = Instantiate(targetPrefab);
         target.transform.position = position;
 
         targets.Add(target);
+        target.OnHit.AddListener(HandleTargetCollision);
 
         spawnCounter = refillCounter;
+    }
+
+    private void HandleTargetCollision(TargetDashScript.DashTargetBundle bundle)
+    {
+        score += bundle.score;
+        targets.Remove(bundle.target);
+        Destroy(bundle.target.gameObject);
+
+        scoreText.text = "Score: " + ((int)score).ToString();
     }
 
     private void FinishMG()
